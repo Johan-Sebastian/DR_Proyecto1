@@ -10,6 +10,43 @@ from urllib.parse import urlparse, parse_qs
 # https://docs.python.org/3/library/http.server.html
 # https://docs.python.org/3/library/http.cookies.html
 
+class SearchHandler(http.server.BaseHTTPRequestHandler):
+	def do_GET(self):
+		if self.path == '/':
+			# Mostrar el formulario de búsqueda
+			self.send_response(200)
+			self.send_header('Content-type', 'text/html')
+			self.end_headers()
+			with open('search_form.html', 'rb') as file:
+				self.wfile.write(file.read())
+		elif self.path.startswith('/search'):
+			# Procesar el formulario de búsqueda
+			self.send_response(200)
+			self.send_header('Content-type', 'text/html')
+			self.end_headers()
+
+			# Obtener los parámetros del formulario de búsqueda
+			query = cgi.parse_qs(self.path[2:])
+			search_terms = query.get('q', [])
+			# Aquí puedes realizar la búsqueda en tus libros y generar la página de resultados
+
+			# En este ejemplo, simplemente mostraremos los términos de búsqueda
+			self.wfile.write(b'<h1>Resultados de búsqueda</h1>')
+			self.wfile.write(b'<ul>')
+			for term in search_terms:
+				self.wfile.write(f'<li>{term.decode()}</li>'.encode())
+			self.wfile.write(b'</ul>')
+		else:
+			# Rutas no válidas
+			self.send_response(404)
+			self.end_headers()
+			self.wfile.write(b'404 Not Found')
+		
+		if __name__ == '__main__':
+			PORT = 8000
+			with socketserver.TCPServer(('', PORT), SearchHandler) as httpd:
+				print(f'Servidor en puerto {PORT}')
+				httpd.serve_forever()
 
 class WebRequestHandler(BaseHTTPRequestHandler):
 ############################################################################################
@@ -29,6 +66,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 		self.set_book_cookie(session_id)
 		self.end_headers()
 		self.wfile.write(response.encode("utf-8"))
+	
 	
 	def search_books_in_redis(self, query):
         	# Conecta a Redis
