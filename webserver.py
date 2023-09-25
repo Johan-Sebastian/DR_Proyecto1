@@ -43,6 +43,56 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 			return
 		else:
 			self.send_error(404, "Not Found")
+		if self.url.path == '/search':
+			query = self.query_data.get('q', '')
+			self.send_response(200)
+			self.send_header("Content-Type", "text/html")
+			self.end_headers()
+			response = self.search_books_in_redis(query)
+			self.wfile.write(response.encode("utf-8"))
+		return
+		else:
+			self.send_error(404, "Not Found")
+
+	def search_books_in_redis(self, query):
+		# Realiza la búsqueda en Redis y devuelve los resultados en formato HTML
+		# En este ejemplo, se busca en todas las claves almacenadas en Redis si el término de búsqueda está contenido en ellas.
+	
+		# Obtén todas las claves de Redis
+		keys = r.keys()
+	
+		# Filtra las claves que contienen el término de búsqueda (ignorando mayúsculas y minúsculas)
+		matching_books = [key for key in keys if query.lower() in key.decode().lower()]
+	
+		# Luego, genera una respuesta HTML con los resultados encontrados.
+		html_response = self.generate_search_results_html(matching_books)
+	
+		return html_response
+
+	def generate_search_results_html(self, matching_books):
+	        # Genera el HTML para mostrar los resultados de búsqueda
+	        # En este ejemplo, se crea una lista ordenada de libros que coinciden con la búsqueda.
+	
+	        # Comienza la construcción del HTML
+	        html = "<html><head><title>Resultados de búsqueda</title></head><body>"
+	        html += "<h1>Resultados de búsqueda</h1>"
+	
+	        # Verifica si se encontraron libros que coinciden con la búsqueda
+	        if matching_books:
+	            html += "<ul>"
+	            for book_key in matching_books:
+	                book_id = book_key.decode()
+	                # Puedes obtener más información sobre el libro desde Redis aquí
+	                # Por ejemplo: book_data = r.get(book_id)
+	                html += f"<li><a href='/books/{book_id}'>Libro {book_id}</a></li>"
+	            html += "</ul>"
+	        else:
+	            html += "<p>No se encontraron resultados para esta búsqueda.</p>"
+	
+	        # Finaliza el HTML
+	        html += "</body></html>"
+	
+	        return html
 
 	def get_book_recomendation(self, session_id, book_id):
 		r.rpush(session_id, book_id)
