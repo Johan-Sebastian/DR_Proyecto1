@@ -5,6 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>La Biblioteca</title>
     <link href="css/style.css" rel="stylesheet">
+    <style>
+        body {
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #q {
+            padding: 5px;
+            width: 300px;
+        }
+
+        article {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        article h2 {
+            margin: 0;
+            flex-basis: 100%;
+        }
+
+        article p {
+            margin: 0;
+            flex-basis: 100%;
+        }
+
+        .book {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .book img {
+            max-width: 150px;
+            max-height: 200px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>La Biblioteca</h1>
@@ -16,20 +66,41 @@
     </form>
 
     <article>
-        <h2><a href="books/book1.html">Rebelión en la Granja</a></h2>
-        <p>George Orwell</p>
-        <br>
-        <h2><a href="books/book2.html">Metro 2033 (NE)</a></h2>
-        <p>Dmitry Glukhovsky</p>
-        <br>
-        <h2><a href="books/book3.html">El Manifiesto Comunista</a></h2>
-        <p>Karl Marx, Friedrich Engels</p>
-        <br>
-        <h2><a href="books/book4.html">Fahrenheit 451</a></h2>
-        <p>Ray Bradbury</p>
-        <br>
-        <h2><a href="books/book5.html">Hitman: Damnation</a></h2>
-        <p>Raymond Benson</p>
+        <div class="book">
+            <img src="img/book1.png" alt="Rebelión en la Granja">
+            <div>
+                <h2><a href="books/book1.html">Rebelión en la Granja</a></h2>
+                <p>George Orwell</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book2.png" alt="Metro 2033 (NE)">
+            <div>
+                <h2><a href="books/book2.html">Metro 2033 (NE)</a></h2>
+                <p>Dmitry Glukhovsky</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book3.png" alt="El Manifiesto Comunista">
+            <div>
+                <h2><a href="books/book3.html">El Manifiesto Comunista</a></h2>
+                <p>Karl Marx, Friedrich Engels</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book4.png" alt="Fahrenheit 451">
+            <div>
+                <h2><a href="books/book4.html">Fahrenheit 451</a></h2>
+                <p>Ray Bradbury</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book5.png" alt="Hitman: Damnation">
+            <div>
+                <h2><a href="books/book5.html">Hitman: Damnation</a></h2>
+                <p>Raymond Benson</p>
+            </div>
+        </div>
     </article>
 </body>
 </html>
