@@ -4,8 +4,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qsl, urlparse
 import re
 import redis
-import uuid
-import os
+import uuid 
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -70,7 +69,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 		<p>  HEADERS: {self.headers}	  </p>
 		<p>  SESSION: {session_id}	  </p>
 		<p>  Recomendación: {book_recomendation}	  </p>
-		"""
+"""
 			self.wfile.write(response.encode("utf-8"))
 		else:
 			self.send_error(404, "Not Found")
@@ -81,53 +80,10 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 		self.send_header("Content-Type", "text/html")
 		self.set_book_cookie(session_id)
 		self.end_headers()
-
-		# Obtener la lista de archivos HTML en el directorio 'html'
-		html_files = [f for f in os.listdir("html") if f.endswith(".html")]
-
-		# Generar la lista de enlaces a los archivos HTML
-		html_links = ""
-		for html_file in html_files:
-			html_links += f'<a href="/books/{html_file}">{html_file}</a><br>'
-
-		response = f"""
-		<!DOCTYPE html>
-		<html lang="es-mx">
-		<head>
-			<meta charset="UTF-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1">
-			<title>La Biblioteca</title>
-			<link href="css/style.css" rel="stylesheet">
-		</head>
-		<body>
-			<h1>La Biblioteca</h1>
-			<form action="/search" method="get">
-				<label for="q">Buscar libros:</label>
-				<input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
-				<input type="submit" value="Buscar">
-			</form>
-			<article>
-				{html_links}
-			</article>
-		</body>
-		</html>
-		"""
-
+		with open('html/index.html') as f:
+			response = f.read()
 		self.wfile.write(response.encode("utf-8"))
 
 	def get_method(self, path):
 		for pattern, method in mapping:
-			match = re.match(pattern, path)
-			if match:
-				return (method, match.groupdict())
-
-mapping = [
-	(r'^/books/(?P<book_id>\d+\.html)$', 'get_book'),
-	(r'^/$', 'get_index'),
-	(r'^/search\?q=(?P<query>[^&]+)', 'get_search'),  # Ruta de búsqueda
-]
-
-if __name__ == "__main__":
-	print("Server starting...")
-	server = HTTPServer(("0.0.0.0", 8000), WebRequestHandler)
-	server.serve_forever()
+			match = re.match
