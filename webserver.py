@@ -11,32 +11,61 @@ from urllib.parse import parse_qsl, urlparse
 
 class WebRequestHandler(BaseHTTPRequestHandler):
 ############################################################################################
+        @cached_property
         def search_books(self):
         query = self.query_data.get("q", "")  # Obtiene el parámetro 'q' del QueryString
         session_id = self.get_book_session()
         
         # Realiza la búsqueda en los libros y devuelve resultados coincidentes
         matching_books = self.search_books_in_redis(query)
-    
+        
         # Genera la respuesta HTML con los resultados
         response = self.generate_search_results_html(matching_books)
-    
+        
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
         self.set_book_cookie(session_id)
         self.end_headers()
         self.wfile.write(response.encode("utf-8"))
-    
+    @cached_property
     def search_books_in_redis(self, query):
-        # Código para buscar libros en Redis según el término de búsqueda 'query'
-        # Debes implementar esta función para buscar en Redis y devolver los resultados
-        pass
-    
+    # Conecta a Redis
+    r = redis.Redis(host='localhost', port=6379, db=0)
+
+    # Obtén todas las claves de libros almacenados en Redis
+    all_book_keys = r.keys('*')
+
+    # Inicializa una lista para almacenar los libros coincidentes
+    matching_books = []
+
+    # Itera sobre las claves de libros y busca si el término de búsqueda está en el contenido del libro
+    for book_key in all_book_keys:
+        book_content = r.get(book_key).decode('utf-8')
+        if query.lower() in book_content.lower():
+            matching_books.append((book_key, book_content))
+
+    # Devuelve la lista de libros coincidentes
+    return matching_books
+    @cached_property
     def generate_search_results_html(self, matching_books):
-        # Genera el HTML de los resultados de búsqueda
-        # Puedes utilizar BeautifulSoup para construir la estructura HTML
-        # Debes implementar esta función para generar la respuesta HTML
-        pass
+    # Crea una estructura HTML para mostrar los resultados
+    html = '<h1>Resultados de búsqueda:</h1>'
+    
+    if not matching_books:
+        html += '<p>No se encontraron resultados.</p>'
+    else:
+        # Itera sobre los libros coincidentes y muestra sus contenidos
+        for book_key, book_content in matching_books:
+            # Puedes usar BeautifulSoup para formatear mejor los resultados
+            soup = BeautifulSoup(book_content, 'html.parser')
+            book_title = soup.find('h1').text  # Supongamos que el título del libro está en un encabezado h1
+
+            # Agrega el título y el contenido del libro a la respuesta HTML
+            html += f'<h2>{book_title}</h2>'
+            html += str(soup)  # Agrega el contenido HTML del libro
+
+    # Devuelve la respuesta HTML completa
+    return html
     
     # Agrega el nuevo patrón de ruta para la búsqueda
     mapping.append((r'^/search$', 'search_books'))
