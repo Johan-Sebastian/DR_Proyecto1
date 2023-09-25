@@ -92,9 +92,10 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 
 
 mapping = [
-            (r'^/books/(?P<book_id>\d+)$', 'get_book'),
-            (r'^/$', 'get_index')
-        ]
+    (r'^/books/(?P<book_id>\d+)$', 'get_book'),
+    (r'^/$', 'get_index'),
+    (r'^/search\?q=(?P<query>[^&]+)', 'get_search'),  # Ruta de búsqueda
+]
 
 if __name__ == "__main__":
     print("Server starting...")
