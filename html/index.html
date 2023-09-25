@@ -1,31 +1,35 @@
 <!DOCTYPE html>
 <html lang="es-mx">
 <head>
-    <title>Proyecto 01</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>La Biblioteca</title>
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-<h1>La Biblioteca</h1>
+    <h1>La Biblioteca</h1>
 
-<form action="/search" method="get">
-    <input type="text" name="q" placeholder="Buscar libros...">
-    <input type="submit" value="Buscar">
-</form>
+    <form action="/search" method="get">
+        <label for="q">Buscar libros:</label>
+        <input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
+        <input type="submit" value="Buscar">
+    </form>
 
-<article>
-    <h2><a href="\books\1"> C# avanzado </a></h2>
-    <p> Pedro López, Juan Ruiz </p>
-    <br>
-    <h2><a href="\books\2"> El nuevo sistema operativo MS-DOS</a></h2>
-    <p> Joe Medina </p>
-    <br>
-    <h2><a href="\books\3"> La Metamorfosis </a></h2>
-    <p> Patrick Alvarado </p>
-    <br>
-    <h2><a href="\books\4"> La Danza de Hielo y Fuego </a></h2>
-    <p> R.R. González </p>
-</article>
+    <article>
+        <h2><a href="/books/1">Rebelión en la Granja</a></h2>
+        <p>George Orwell</p>
+        <br>
+        <h2><a href="/books/2">Metro 2033 (NE)</a></h2>
+        <p>Dmitry Glukhovsky</p>
+        <br>
+        <h2><a href="/books/3">El Manifiesto Comunista</a></h2>
+        <p>Karl Marx, Friedrich Engels</p>
+        <br>
+        <h2><a href="/books/4">Fahrenheit 451</a></h2>
+        <p>Ray Bradbury</p>
+        <br>
+        <h2><a href="/books/5">Hitman: Damnation</a></h2>
+        <p>Raymond Benson</p>
+    </article>
 </body>
 </html>
