@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## Proyecto 1 
 
 En este primer proyecto vamos a desarrollar una applicación web sencilla
@@ -103,3 +104,7 @@ términos de la búsqueda entre otras variables.
 * Puedes agregegar otros elementos a la página, imágenes, etc.
 * Es importante *no* darle estilo a la página.
 
+=======
+# DR_Proyecto1
+PW_Proyecto1
+>>>>>>> 420a99993d757ef270af578eb63ea4571a997cd0
