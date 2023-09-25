@@ -11,7 +11,7 @@ from urllib.parse import parse_qsl, urlparse
 
 class WebRequestHandler(BaseHTTPRequestHandler):
 ############################################################################################
-        @cached_property
+        
         def search_books(self):
         query = self.query_data.get("q", "")  # Obtiene el parámetro 'q' del QueryString
         session_id = self.get_book_session()
@@ -27,7 +27,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         self.set_book_cookie(session_id)
         self.end_headers()
         self.wfile.write(response.encode("utf-8"))
-    @cached_property
+    
     def search_books_in_redis(self, query):
     # Conecta a Redis
     r = redis.Redis(host='localhost', port=6379, db=0)
@@ -46,7 +46,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 
     # Devuelve la lista de libros coincidentes
     return matching_books
-    @cached_property
+    
     def generate_search_results_html(self, matching_books):
     # Crea una estructura HTML para mostrar los resultados
     html = '<h1>Resultados de búsqueda:</h1>'
@@ -92,10 +92,17 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         return SimpleCookie(self.headers.get("Cookie"))
 
     def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html")
-        self.end_headers()
-        self.wfile.write(self.get_response().encode("utf-8"))
+        if self.url.path == '/search':
+                self.search_books()
+                return
+            method = self.get_method(self.url.path)
+        if method:
+                method_name, dict_params = method
+                method = getattr(self, method_name)
+                method(**dict_params)
+                return
+        else:
+                self.send_error(404, "Not Found")
 
     def get_response(self):
         return f"""
