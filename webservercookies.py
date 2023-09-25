@@ -106,42 +106,58 @@ class WebRequestHandler(BaseHTTPRequestHandler):
     	return matching_books
 
 	def generate_search_results_html(self, matching_books):
-    	# Genera el HTML de los resultados de búsqueda a partir de la lista de libros coincidentes
-    	# Puedes utilizar BeautifulSoup para construir la estructura HTML
-    	from bs4 import BeautifulSoup
-    
-    	# Crea un documento HTML en blanco
-    	doc = BeautifulSoup("<html><body></body></html>", "html.parser")
-    	body = doc.body
-    	h1 = doc.new_tag("h1")
-    	h1.string = "Resultados de búsqueda"
-    	body.append(h1)
-    
-    	if matching_books:
-    		# Si se encontraron libros coincidentes, agrégalos a la lista
-    		ul = doc.new_tag("ul")
-    		for book in matching_books:
-    			li = doc.new_tag("li")
-    			li.string = book
-    			ul.append(li)
-    		body.append(ul)
-    	else:
-    		# Si no se encontraron libros coincidentes, muestra un mensaje
-    		p = doc.new_tag("p")
-    		p.string = "No se encontraron resultados para la búsqueda."
-    		body.append(p)
-    
-    	# Convierte el documento HTML a una cadena de texto
-    	result_html = doc.prettify()
-    	return result_html
+	    	# Genera el HTML de los resultados de búsqueda a partir de la lista de libros coincidentes
+	    	# Puedes utilizar BeautifulSoup para construir la estructura HTML
+	    	from bs4 import BeautifulSoup
+	    
+	    	# Crea un documento HTML en blanco
+	    	doc = BeautifulSoup("<html><body></body></html>", "html.parser")
+	    	body = doc.body
+	    	h1 = doc.new_tag("h1")
+	    	h1.string = "Resultados de búsqueda"
+	    	body.append(h1)
+	    
+	    	if matching_books:
+	    		# Si se encontraron libros coincidentes, agrégalos a la lista
+	    		ul = doc.new_tag("ul")
+	    		for book in matching_books:
+	    			li = doc.new_tag("li")
+	    			li.string = book
+	    			ul.append(li)
+	    		body.append(ul)
+	    	else:
+	    		# Si no se encontraron libros coincidentes, muestra un mensaje
+	    		p = doc.new_tag("p")
+	    		p.string = "No se encontraron resultados para la búsqueda."
+	    		body.append(p)
+	    
+	    	# Convierte el documento HTML a una cadena de texto
+	    	result_html = doc.prettify()
+	    	return result_html
 
-mapping = [
-	(r'^/books/(?P<book_id>\d+)$', 'get_book'),
-	(r'^/$', 'get_index'),
-	(r'^/search\?q=(?P<query>[^&]+)', 'get_search'),  # Ruta de búsqueda
-]
+	def get_search(self):
+		# Obtiene los términos de búsqueda del Query String
+		query = self.url.query.get("q", "")
+		
+		# Realiza la búsqueda en Redis
+		matching_books = self.search_books_in_redis(query)
+	
+		# Genera la página de resultados de búsqueda en HTML
+		result_html = self.generate_search_results_html(matching_books)
+	
+		# Envía la respuesta
+		self.send_response(200)
+		self.send_header("Content-Type", "text/html")
+		self.end_headers()
+		self.wfile.write(result_html.encode("utf-8"))
 
-if __name__ == "__main__":
-	print("Server starting...")
-	server = HTTPServer(("0.0.0.0", 8000), WebRequestHandler)
-	server.serve_forever()
+	mapping = [
+		(r'^/books/(?P<book_id>\d+)$', 'get_book'),
+		(r'^/$', 'get_index'),
+		(r'^/search\?q=(?P<query>[^&]+)', 'get_search'),  # Ruta de búsqueda
+	]
+	
+	if __name__ == "__main__":
+		print("Server starting...")
+		server = HTTPServer(("0.0.0.0", 8000), WebRequestHandler)
+		server.serve_forever()
