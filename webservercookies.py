@@ -5,6 +5,7 @@ from urllib.parse import parse_qsl, urlparse
 import re
 import redis
 import uuid
+import os
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -64,12 +65,12 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 			self.end_headers()
 			response = f"""
 			{book_page.decode()}
-		<p>  Ruta: {self.path}	</p>
-		<p>  URL: {self.url}	  </p>
-		<p>  HEADERS: {self.headers}  </p>
+		<p>  Ruta: {self.path}			</p>
+		<p>  URL: {self.url}			  </p>
+		<p>  HEADERS: {self.headers}	  </p>
 		<p>  SESSION: {session_id}	  </p>
-		<p>  Recomendación: {book_recomendation}  </p>
-        """
+		<p>  Recomendación: {book_recomendation}	  </p>
+		"""
 			self.wfile.write(response.encode("utf-8"))
 		else:
 			self.send_error(404, "Not Found")
@@ -80,8 +81,38 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 		self.send_header("Content-Type", "text/html")
 		self.set_book_cookie(session_id)
 		self.end_headers()
-		with open('html/index.html') as f:
-			response = f.read()
+
+		# Obtener la lista de archivos HTML en el directorio 'html'
+		html_files = [f for f in os.listdir("html") if f.endswith(".html")]
+
+		# Generar la lista de enlaces a los archivos HTML
+		html_links = ""
+		for html_file in html_files:
+			html_links += f'<a href="/books/{html_file}">{html_file}</a><br>'
+
+		response = f"""
+		<!DOCTYPE html>
+		<html lang="es-mx">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<title>La Biblioteca</title>
+			<link href="css/style.css" rel="stylesheet">
+		</head>
+		<body>
+			<h1>La Biblioteca</h1>
+			<form action="/search" method="get">
+				<label for="q">Buscar libros:</label>
+				<input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
+				<input type="submit" value="Buscar">
+			</form>
+			<article>
+				{html_links}
+			</article>
+		</body>
+		</html>
+		"""
+
 		self.wfile.write(response.encode("utf-8"))
 
 	def get_method(self, path):
@@ -90,74 +121,13 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 			if match:
 				return (method, match.groupdict())
 
-	def search_books_in_redis(self, query):
-    	# Realiza la búsqueda de libros en Redis según el término de búsqueda 'query'
-    	# Devuelve una lista de libros que coincidan con la búsqueda
-    	matching_books = []
-    	all_books = r.keys("book*")  # Obtiene todas las claves de libros en Redis
-    	for book_key in all_books:
-    		book_page = r.get(book_key)
-    		if book_page:
-    			# Convierte la página del libro en una cadena de texto
-    			book_text = book_page.decode("utf-8")
-    			# Verifica si el término de búsqueda aparece en la página del libro
-    			if query.lower() in book_text.lower():
-    				matching_books.append(book_text)
-    	return matching_books
+mapping = [
+	(r'^/books/(?P<book_id>\d+\.html)$', 'get_book'),
+	(r'^/$', 'get_index'),
+	(r'^/search\?q=(?P<query>[^&]+)', 'get_search'),  # Ruta de búsqueda
+]
 
-	def generate_search_results_html(self, matching_books):
-	    	# Genera el HTML de los resultados de búsqueda a partir de la lista de libros coincidentes
-	    	# Puedes utilizar BeautifulSoup para construir la estructura HTML
-	    	from bs4 import BeautifulSoup
-	    
-	    	# Crea un documento HTML en blanco
-	    	doc = BeautifulSoup("<html><body></body></html>", "html.parser")
-	    	body = doc.body
-	    	h1 = doc.new_tag("h1")
-	    	h1.string = "Resultados de búsqueda"
-	    	body.append(h1)
-	    
-	    	if matching_books:
-	    		# Si se encontraron libros coincidentes, agrégalos a la lista
-	    		ul = doc.new_tag("ul")
-	    		for book in matching_books:
-	    			li = doc.new_tag("li")
-	    			li.string = book
-	    			ul.append(li)
-	    		body.append(ul)
-	    	else:
-	    		# Si no se encontraron libros coincidentes, muestra un mensaje
-	    		p = doc.new_tag("p")
-	    		p.string = "No se encontraron resultados para la búsqueda."
-	    		body.append(p)
-	    
-	    	# Convierte el documento HTML a una cadena de texto
-	    	result_html = doc.prettify()
-	    	return result_html
-
-	def get_search(self):
-		# Obtiene los términos de búsqueda del Query String
-		query = self.url.query.get("q", "")
-		
-		# Realiza la búsqueda en Redis
-		matching_books = self.search_books_in_redis(query)
-	
-		# Genera la página de resultados de búsqueda en HTML
-		result_html = self.generate_search_results_html(matching_books)
-	
-		# Envía la respuesta
-		self.send_response(200)
-		self.send_header("Content-Type", "text/html")
-		self.end_headers()
-		self.wfile.write(result_html.encode("utf-8"))
-
-	mapping = [
-		(r'^/books/(?P<book_id>\d+)$', 'get_book'),
-		(r'^/$', 'get_index'),
-		(r'^/search\?q=(?P<query>[^&]+)', 'get_search'),  # Ruta de búsqueda
-	]
-	
-	if __name__ == "__main__":
-		print("Server starting...")
-		server = HTTPServer(("0.0.0.0", 8000), WebRequestHandler)
-		server.serve_forever()
+if __name__ == "__main__":
+	print("Server starting...")
+	server = HTTPServer(("0.0.0.0", 8000), WebRequestHandler)
+	server.serve_forever()
