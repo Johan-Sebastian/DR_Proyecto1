@@ -100,7 +100,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         lastadd = ""
         for id in range(5):
             id = id + 1
-	    converted_num = str(id)
+            converted_num = str(id)
             html = r.get("libro:" + converted_num).decode()
             text = BS(html, 'html.parser').get_text()
             if re.search(searchquery, text):
