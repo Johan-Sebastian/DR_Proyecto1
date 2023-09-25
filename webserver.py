@@ -6,7 +6,6 @@ import re
 import redis
 import uuid
 
-# Conecta a Redis
 r = redis.Redis(host='localhost', port=6379, db=0)
 
 class WebRequestHandler(BaseHTTPRequestHandler):
@@ -48,8 +47,9 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 		r.rpush(session_id, book_id)
 		books = r.lrange(session_id, 0, 5)
 		print(session_id, books)
-		all_books = [str(i + 1) for i in range(4)]
-		new = [b for b in all_books if b not in [vb.decode() for vb in books]]
+		all_books = [str(i+1) for i in range(4)]
+		new = [b for b in all_books if b not in
+			   [vb.decode() for vb in books]]
 		if new:
 			return new[0]
 
@@ -64,12 +64,12 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 			self.end_headers()
 			response = f"""
 			{book_page.decode()}
-			<p>  Ruta: {self.path}			</p>
-			<p>  URL: {self.url}			  </p>
-			<p>  HEADERS: {self.headers}	  </p>
-			<p>  SESSION: {session_id}		</p>
-			<p>  Recomendación: {book_recomendation} </p>
-			"""
+		<p>  Ruta: {self.path}			</p>
+		<p>  URL: {self.url}			  </p>
+		<p>  HEADERS: {self.headers}	  </p>
+		<p>  SESSION: {session_id}	  </p>
+		<p>  Recomendación: {book_recomendation}	  </p>
+"""
 			self.wfile.write(response.encode("utf-8"))
 		else:
 			self.send_error(404, "Not Found")
@@ -84,15 +84,6 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 			response = f.read()
 		self.wfile.write(response.encode("utf-8"))
 
-	def get_search(self, query):
-		# Manejar la solicitud de búsqueda aquí
-		matching_books = self.search_books_in_redis(query)
-		self.send_response(200)
-		self.send_header("Content-Type", "text/html")
-		self.end_headers()
-		response = self.generate_search_results_html(matching_books)
-		self.wfile.write(response.encode("utf-8"))
-
 	def get_method(self, path):
 		for pattern, method in mapping:
 			match = re.match(pattern, path)
@@ -100,7 +91,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 				return (method, match.groupdict())
 
 mapping = [
-	(r'^/books/(?P<book_id>\d+)$', 'get_book'),
+	(r'^/books/(?P<book_id>\d+\.html)$', 'get_book'),
 	(r'^/$', 'get_index'),
 	(r'^/search\?q=(?P<query>[^&]+)', 'get_search'),  # Ruta de búsqueda
 ]
