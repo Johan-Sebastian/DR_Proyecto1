@@ -78,48 +78,14 @@ class WebRequestHandler(BaseHTTPRequestHandler):
             self.send_error(404, "Not Found")
 
     def get_index(self):
-	session_id = self.get_book_session()
-	self.send_response(200)
-	self.send_header("Content-Type", "text/html")
-	self.set_book_cookie(session_id)
-	self.end_headers()
-	
-	# Recupera los datos de los libros desde Redis y genera el HTML
-	book1_data = r.hgetall("book1")
-	book2_data = r.hgetall("book2")
-	book3_data = r.hgetall("book3")
-	book4_data = r.hgetall("book4")
-	book5_data = r.hgetall("book5")
-	
-	response = f"""
-		<!DOCTYPE html>
-		<html lang="es-mx">
-		<head>
-			<meta charset="UTF-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1">
-			<title>La Biblioteca</title>
-			<link href="css/style.css" rel="stylesheet">
-		</head>
-		<body>
-			<h1>La Biblioteca</h1>
-
-			<form action="/search" method="get">
-				<label for="q">Buscar libros:</label>
-				<input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
-				<input type="submit" value="Buscar">
-			</form>
-
-			<article>
-				<h2><a href="/books/book1.html">{book1_data['titulo'].decode()}</a></h2>
-				<p>{book1_data['autor'].decode()}</p>
-				<p>{book1_data['descripcion'].decode()}</p>
-				<br>
-				<!-- Repite lo mismo para los otros libros (book2, book3, book4, book5) -->
-			</article>
-		</body>
-		</html>
-	"""
-	self.wfile.write(response.encode("utf-8"))
+        session_id = self.get_book_session()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html")
+        self.set_book_cookie(session_id)
+        self.end_headers()
+        with open('html/index.html') as f:
+            response = f.read()
+        self.wfile.write(response.encode("utf-8"))
 
     def get_method(self, path):
         print(path)
@@ -138,6 +104,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
             if re.search(searchquery, text):
                 print("D")
                 lastadd = lastadd + f"""
+		
                       <h1><a href="\\books\\{id+1}"> Libro {id+1} contiene busqueda</a></h1><br>
                       """
         self.send_response(200)
