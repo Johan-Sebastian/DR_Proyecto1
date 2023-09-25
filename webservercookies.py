@@ -101,7 +101,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         for id in range(5):
             id = id + 1
             converted_num = str(id)
-            html = r.get("libro:" + converted_num).decode()
+            html = r.hgetall("libro:" + converted_num).decode()
             text = BS(html, 'html.parser').get_text()
             if re.search(searchquery, text):
                 print("D")
