@@ -1,10 +1,10 @@
 from functools import cached_property
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import parse_qsl, urlparse
+from urllib.parse import parse_qsl, urlparse, unquote
 import re
 import redis
-import uuid 
+import uuid
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -89,6 +89,45 @@ class WebRequestHandler(BaseHTTPRequestHandler):
             match = re.match(pattern, path)
             if match:
                 return (method, match.groupdict())
+
+    def get_search(self, query):
+		session_id = self.get_book_session()
+		matching_books = self.search_books_in_redis(query)
+		search_results_html = self.generate_search_results_html(matching_books)
+		self.send_response(200)
+		self.send_header("Content-Type", "text/html")
+		self.set_book_cookie(session_id)
+		self.end_headers()
+		self.wfile.write(search_results_html.encode("utf-8"))
+
+	def search_books_in_redis(self, query):
+		# Código para buscar libros en Redis según el término de búsqueda 'query'
+    	# Supongamos que los libros están almacenados en un conjunto llamado "libros"
+    	matching_books = []
+    
+    	# Obtén todos los libros desde Redis (esto depende de cómo estén almacenados tus datos en Redis)
+    	all_books = r.smembers("libros")
+    
+    	# Itera a través de los libros y verifica si el término de búsqueda está en el título o autor
+    	for book_data in all_books:
+    		book = book_data.decode('utf-8')  # Decodifica los datos del libro
+    		if query.lower() in book.lower():
+    			title, author = book.split('|')  # Supongamos que los datos del libro están separados por '|'
+    			matching_books.append({'title': title, 'author': author})
+    
+    	return matching_books
+
+	def generate_search_results_html(self, matching_books):
+		# Genera el HTML de los resultados de búsqueda
+    	search_results_html = "<h2>Resultados de la búsqueda:</h2>"
+    	if not matching_books:
+    		search_results_html += "<p>No se encontraron resultados.</p>"
+    	else:
+    		search_results_html += "<ul>"
+    		for book in matching_books:
+    			search_results_html += f"<li>{book['title']} - {book['author']}</li>"
+    		search_results_html += "</ul>"
+    	return search_results_html
 
 
 mapping = [
