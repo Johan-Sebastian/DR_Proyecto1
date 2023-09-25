@@ -1,213 +1,125 @@
 from functools import cached_property
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import parse_qsl, urlparse
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qsl, urlparse, parse_qs
+import re
+import redis
+import uuid
 
-# Código basado en:
-# https://realpython.com/python-http-server/
-# https://docs.python.org/3/library/http.server.html
-# https://docs.python.org/3/library/http.cookies.html
-
-class SearchHandler(http.server.BaseHTTPRequestHandler):
-	def do_GET(self):
-		if self.path == '/':
-			# Mostrar el formulario de búsqueda
-			self.send_response(200)
-			self.send_header('Content-type', 'text/html')
-			self.end_headers()
-			with open('search_form.html', 'rb') as file:
-				self.wfile.write(file.read())
-		elif self.path.startswith('/search'):
-			# Procesar el formulario de búsqueda
-			self.send_response(200)
-			self.send_header('Content-type', 'text/html')
-			self.end_headers()
-
-			# Obtener los parámetros del formulario de búsqueda
-			query = cgi.parse_qs(self.path[2:])
-			search_terms = query.get('q', [])
-			# Aquí puedes realizar la búsqueda en tus libros y generar la página de resultados
-
-			# En este ejemplo, simplemente mostraremos los términos de búsqueda
-			self.wfile.write(b'<h1>Resultados de búsqueda</h1>')
-			self.wfile.write(b'<ul>')
-			for term in search_terms:
-				self.wfile.write(f'<li>{term.decode()}</li>'.encode())
-			self.wfile.write(b'</ul>')
-		else:
-			# Rutas no válidas
-			self.send_response(404)
-			self.end_headers()
-			self.wfile.write(b'404 Not Found')
-		
-		if __name__ == '__main__':
-			PORT = 8000
-			with socketserver.TCPServer(('', PORT), SearchHandler) as httpd:
-				print(f'Servidor en puerto {PORT}')
-				httpd.serve_forever()
+# Conéctate a Redis
+r = redis.Redis(host='localhost', port=6379, db=0)
 
 class WebRequestHandler(BaseHTTPRequestHandler):
-############################################################################################
-		
-	def search_books(self):
-		query = self.query_data.get("q", "")  # Obtiene el parámetro 'q' del QueryString
+	@cached_property
+	def url(self):
+		return urlparse(self.path)
+
+	@cached_property
+	def cookies(self):
+		return SimpleCookie(self.headers.get("Cookie"))
+
+	def set_book_cookie(self, session_id, max_age=10):
+		c = SimpleCookie()
+		c["session"] = session_id
+		c["session"]["max-age"] = max_age
+		self.send_header('Set-Cookie', c.output(header=''))
+
+	def get_book_session(self):
+		c = self.cookies
+		if not c:
+			print("No cookie")
+			c = SimpleCookie()
+			c["session"] = uuid.uuid4()
+		else:
+			print("Cookie found")
+		return c.get("session").value
+
+	def do_GET(self):
+		method = self.get_method(self.url.path)
+		if method:
+			method_name, dict_params = method
+			method = getattr(self, method_name)
+			method(**dict_params)
+			return
+		else:
+			self.send_error(404, "Not Found")
+
+	def get_book_recomendation(self, session_id, book_id):
+		r.rpush(session_id, book_id)
+		books = r.lrange(session_id, 0, 5)
+		print(session_id, books)
+		all_books = [str(i+1) for i in range(4)]
+		new = [b for b in all_books if b not in
+			   [vb.decode() for vb in books]]
+		if new:
+			return new[0]
+
+	def get_book(self, book_id):
 		session_id = self.get_book_session()
-		
-		# Realiza la búsqueda en los libros y devuelve resultados coincidentes
-		matching_books = self.search_books_in_redis(query)
-		
-		# Genera la respuesta HTML con los resultados
-		response = self.generate_search_results_html(matching_books)
-		
+		book_recomendation = self.get_book_recomendation(session_id, book_id)
+		book_page = r.get(book_id)
+		if book_page:
+			self.send_response(200)
+			self.send_header("Content-Type", "text/html")
+			self.set_book_cookie(session_id)
+			self.end_headers()
+			response = f"""
+			{book_page.decode()}
+		<p>  Ruta: {self.path}	</p>
+		<p>  URL: {self.url}  </p>
+		<p>  HEADERS: {self.headers}  </p>
+		<p>  SESSION: {session_id} </p>
+		<p>  Recomendación: {book_recomendation}  </p>
+"""
+			self.wfile.write(response.encode("utf-8"))
+		else:
+			self.send_error(404, "Not Found")
+
+	def get_index(self):
+		session_id = self.get_book_session()
 		self.send_response(200)
 		self.send_header("Content-Type", "text/html")
 		self.set_book_cookie(session_id)
 		self.end_headers()
+		with open('html/index.html') as f:
+			response = f.read()
 		self.wfile.write(response.encode("utf-8"))
+
+	def search_books(self):
+		session_id = self.get_book_session()
+		self.send_response(200)
+		self.send_header("Content-Type", "text/html")
+		self.set_book_cookie(session_id)
+		self.end_headers()
+		
+		# Obtener los términos de búsqueda del QueryString
+		query = parse_qs(self.url.query)
+		search_terms = query.get('q', [])
+		
+		# Aquí puedes realizar la búsqueda en tus libros en Redis y generar la página de resultados
+		
+		# En este ejemplo, simplemente mostraremos los términos de búsqueda
+		response = "<h1>Resultados de búsqueda</h1>"
+		response += "<ul>"
+		for term in search_terms:
+			response += f"<li>{term}</li>"
+		response += "</ul>"
+		
+		self.wfile.write(response.encode("utf-8"))
+
+	def get_method(self, path):
+		for pattern, method in mapping:
+			match = re.match(pattern, path)
+			if match:
+				return (method, match.groupdict())
+
+		mapping = [
+			(r'^/books/(?P<book_id>\d+)$', 'get_book'),
+			(r'^/$', 'get_index'),
+			(r'^/search$', 'search_books')  # Agregamos una nueva ruta para la búsqueda
+		]
 	
-	
-	def search_books_in_redis(self, query):
-        	# Conecta a Redis
-        	r = redis.Redis(host='localhost', port=6379, db=0)
-        
-        	# Obtén todas las claves de libros almacenados en Redis
-        	all_book_keys = r.keys('*')
-        
-        	# Inicializa una lista para almacenar los libros coincidentes
-        	matching_books = []
-        
-        	# Itera sobre las claves de libros y busca si el término de búsqueda está en el contenido del libro
-        	for book_key in all_book_keys:
-        		book_content = r.get(book_key).decode('utf-8')
-        		if query.lower() in book_content.lower():
-        			matching_books.append((book_key, book_content))
-        
-        	# Devuelve la lista de libros coincidentes
-        	return matching_books
-        
-        		class WebRequestHandler(BaseHTTPRequestHandler):
-        	# ...
-
-	def do_GET(self):
-		# ...
-
-		if self.path.startswith("/search"):
-			# Si la solicitud es para la ruta /search, manéjala para buscar libros
-			query = parse_qs(urlparse(self.path).query).get('q', [''])[0]
-			matching_books = self.search_books(query)
-			self.send_response(200)
-			self.send_header("Content-Type", "text/html")
-			self.end_headers()
-			self.wfile.write(self.generate_search_results_html(matching_books).encode("utf-8"))
-			return
-
-	def search_books(self, query):
-		# Implementa la lógica para buscar libros según el término de búsqueda
-		# Devuelve una lista de libros que coinciden con la búsqueda
-		matching_books = []
-
-		# Lógica de búsqueda aquí
-
-		return matching_books
-
-	def generate_search_results_html(self, matching_books):
-		# Genera el HTML de los resultados de búsqueda
-		# Utiliza BeautifulSoup o construye el HTML manualmente
-		# Devuelve una cadena HTML
-
-		# Generación de HTML aquí
-		search_results_html = """
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>Resultados de búsqueda</title>
-		</head>
-		<body>
-			<h2>Resultados de búsqueda:</h2>
-			<ul>
-		"""
-
-		for book in matching_books:
-			search_results_html += f"<li>{book}</li>"
-
-		search_results_html += """
-			</ul>
-		</body>
-		</html>
-		"""
-
-		return search_results_html
-	
-	def generate_search_results_html(self, matching_books):
-        	# Crea una estructura HTML para mostrar los resultados
-        	html = '<h1>Resultados de búsqueda:</h1>'
-        	
-        	if not matching_books:
-        		html += '<p>No se encontraron resultados.</p>'
-        	else:
-                        # Itera sobre los libros coincidentes y muestra sus contenidos
-                        for book_key, book_content in matching_books:
-                                # Puedes usar BeautifulSoup para formatear mejor los resultados
-                                soup = BeautifulSoup(book_content, 'html.parser')
-                                book_title = soup.find('h1').text  # Supongamos que el título del libro está en un encabezado h1
-                
-                                # Agrega el título y el contenido del libro a la respuesta HTML
-                                html += f'<h2>{book_title}</h2>'
-                                html += str(soup)  # Agrega el contenido HTML del libro
-        
-        	# Devuelve la respuesta HTML completa
-        	return html
-        	
-        	# Agrega el nuevo patrón de ruta para la búsqueda
-        	mapping.append((r'^/search$', 'search_books'))
-###################################################################################
-    @cached_property
-    def url(self):
-        return urlparse(self.path)
-
-    @cached_property
-    def query_data(self):
-        return dict(parse_qsl(self.url.query))
-
-    @cached_property
-    def post_data(self):
-        content_length = int(self.headers.get("Content-Length", 0))
-        return self.rfile.read(content_length)
-
-    @cached_property
-    def form_data(self):
-        return dict(parse_qsl(self.post_data.decode("utf-8")))
-
-    @cached_property
-    def cookies(self):
-        return SimpleCookie(self.headers.get("Cookie"))
-
-    def do_GET(self):
-        if self.url.path == '/search':
-                self.search_books()
-                return
-            method = self.get_method(self.url.path)
-        if method:
-                method_name, dict_params = method
-                method = getattr(self, method_name)
-                method(**dict_params)
-                return
-        else:
-                self.send_error(404, "Not Found")
-
-    def get_response(self):
-        return f"""
-    <h1> Hola Web </h1>
-    <p>  {self.path}         </p>
-    <p>  {self.headers}      </p>
-    <p>  {self.cookies}      </p>
-    <p>  {self.query_data}   </p>
-"""
-
-
-if __name__ == "__main__":
-    print("Server starting...")
-    server = HTTPServer(("0.0.0.0", 8000), WebRequestHandler)
-    server.serve_forever()
+	if __name__ == "__main__":
+		print("Server starting...")
+		server = HTTPServer(("0.0.0.0", 8000), WebRequestHandler)
+		server.serve_forever()
