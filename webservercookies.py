@@ -99,7 +99,9 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         searchquery = self.url.query[5:]
         lastadd = ""
         for id in range(5):
-            html = r.get(id + 1).decode()
+            id = id + 1
+	    converted_num = str(id)
+            html = r.get("libro:" + converted_num).decode()
             text = BS(html, 'html.parser').get_text()
             if re.search(searchquery, text):
                 print("D")
