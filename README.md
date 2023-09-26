@@ -19,3 +19,10 @@ Este proyecto es un sistema de búsqueda y recomendación de libros en línea ut
 - Visualización de detalles de un libro.
 - Recomendación de libros basada en el historial de navegación del usuario.
 - Sesiones de usuario gestionadas sin el uso de cookies.
+
+## Capturas de Pantalla
+
+![Captura de Pantalla 1](img/SS1.png)
+![Captura de Pantalla 2](img/SS2.png)
+![Captura de Pantalla 3](img/SS3.png)
+![Captura de Pantalla 4](img/SS4.png)
