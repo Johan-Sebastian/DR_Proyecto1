@@ -21,7 +21,7 @@ Este proyecto es un sistema de búsqueda y recomendación de libros en línea ut
 - Sesiones de usuario gestionadas sin el uso de cookies.
 
 ## Video Demostrativo
-<iframe width="1920" height="1000" src="https://www.youtube.com/watch?v=FOJgT9wPuXM" frameborder="0" allowfullscreen></iframe>
+[Ver el video en YouTube](https://www.youtube.com/watch?v=FOJgT9wPuXM)
 
 
 ## Capturas de Pantalla
