@@ -1,110 +1,110 @@
 <!DOCTYPE html>
 <html lang="es-mx">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>La Biblioteca</title>
-	<link href="css/style.css" rel="stylesheet">
-	<style>
-		body {
-			text-align: center;
-		}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>La Biblioteca</title>
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        body {
+            text-align: center;
+        }
 
-		h1 {
-			margin-top: 20px;
-		}
+        h1 {
+            margin-top: 20px;
+        }
 
-		form {
-			margin-top: 20px;
-		}
+        form {
+            margin-top: 20px;
+        }
 
-		#q {
-			padding: 5px;
-			width: 300px;
-		}
+        #q {
+            padding: 5px;
+            width: 300px;
+        }
 
-		article {
-			display: flex;
-			flex-wrap: wrap;
-			justify-content: center;
-			margin-top: 20px;
-		}
+        article {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
 
-		.book {
-			display: flex;
-			align-items: center;
-			margin: 10px;
-			width: 600px;
-		}
+        .book {
+            display: flex;
+            align-items: center;
+            margin: 10px;
+            width: 600px;
+        }
 
-		.book img {
-			max-width: 200px;
-			max-height: 300px;
-			margin-right: 20px;
-		}
+        .book img {
+            max-width: 200px;
+            max-height: 300px;
+            margin-right: 20px;
+        }
 
-		.book-details {
-			flex-grow: 1;
-		}
+        .book-details {
+            flex-grow: 1;
+        }
 
-		.book h2 {
-			margin: 0;
-		}
+        .book h2 {
+            margin: 0;
+        }
 
-		.book p {
-			margin: 0;
-		}
-	</style>
+        .book p {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-	<h1>La Biblioteca</h1>
+    <h1>La Biblioteca</h1>
 
-	<form action="/search" method="get">
-		<label for="q">Buscar libros:</label>
-		<input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
-		<input type="submit" value="Buscar">
-	</form>
+    <form action="/search" method="get">
+        <label for="q">Buscar libros:</label>
+        <input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
+        <input type="submit" value="Buscar">
+    </form>
 
-	<article>
-		<div class="book">
-			<img src="img/book1.png" alt="Rebelión en la Granja">
-			<div class="book-details">
-				<h2><a href="books/book1.html">Rebelión en la Granja</a></h2>
-				<p>George Orwell</p>
-			</div>
-		</div>
+    <article>
+        <div class="book">
+            <img src="https://imgur.com/uI4QOiY.png" alt="Rebelión en la Granja">
+            <div class="book-details">
+                <h2><a href="\books\1">Rebelión en la Granja</a></h2>
+                <p>George Orwell</p>
+            </div>
+        </div>
 
-		<div class="book">
-			<img src="img/book2.png" alt="Metro 2033 (NE)">
-			<div class="book-details">
-				<h2><a href="books/book2.html">Metro 2033 (NE)</a></h2>
-				<p>Dmitry Glukhovsky</p>
-			</div>
-		</div>
+        <div class="book">
+            <img src="img/book2.png" alt="Metro 2033 (NE)">
+            <div class="book-details">
+                <h2><a href="\books\2">Metro 2033 (NE)</a></h2>
+                <p>Dmitry Glukhovsky</p>
+            </div>
+        </div>
 
-		<div class="book">
-			<img src="img/book3.png" alt="El Manifiesto Comunista">
-			<div class="book-details">
-				<h2><a href="books/book3.html">El Manifiesto Comunista</a></h2>
-				<p>Karl Marx, Friedrich Engels</p>
-			</div>
-		</div>
+        <div class="book">
+            <img src="img/book3.png" alt="El Manifiesto Comunista">
+            <div class="book-details">
+                <h2><a href="\books\3">El Manifiesto Comunista</a></h2>
+                <p>Karl Marx, Friedrich Engels</p>
+            </div>
+        </div>
 
-		<div class="book">
-			<img src="img/book4.png" alt="Fahrenheit 451">
-			<div class="book-details">
-				<h2><a href="books/book4.html">Fahrenheit 451</a></h2>
-				<p>Ray Bradbury</p>
-			</div>
-		</div>
+        <div class="book">
+            <img src="img/book4.png" alt="Fahrenheit 451">
+            <div class="book-details">
+                <h2><a href="\books\4">Fahrenheit 451</a></h2>
+                <p>Ray Bradbury</p>
+            </div>
+        </div>
 
-		<div class="book">
-			<img src="img/book5.png" alt="Hitman: Damnation">
-			<div class="book-details">
-				<h2><a href="books/book5.html">Hitman: Damnation</a></h2>
-				<p>Raymond Benson</p>
-			</div>
-		</div>
-	</article>
+        <div class="book">
+            <img src="img/book5.png" alt="Hitman: Damnation">
+            <div class="book-details">
+                <h2><a href="\books\5">Hitman: Damnation</a></h2>
+                <p>Raymond Benson</p>
+            </div>
+        </div>
+    </article>
 </body>
 </html>
