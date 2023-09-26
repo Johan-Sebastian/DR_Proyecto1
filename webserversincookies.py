@@ -120,8 +120,14 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 			# Convertir el texto del libro a minúsculas para realizar una búsqueda insensible a mayúsculas
 			text = text.lower()
 	
-			# Utilizar una expresión regular para buscar la cadena de búsqueda en el texto del libro
-			if re.search(searchquery, text):
+			# Tokeniza la cadena de búsqueda en palabras individuales
+			search_words = searchquery.split()
+	
+			# Tokeniza el texto del libro en palabras individuales
+			book_words = re.findall(r'\b\w+\b', text)
+	
+			# Verifica si todas las palabras clave de búsqueda están en el texto del libro
+			if all(word in book_words for word in search_words):
 				# Si se encuentra la búsqueda, agregar un elemento HTML con un enlace al libro
 				# También se incluye un identificador de sesión en forma de QueryString
 				lastadd = lastadd + f"""
@@ -145,6 +151,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 			{searchpage.decode()}
 			""" + lastadd
 		self.wfile.write(response.encode("utf-8"))
+
 
 # Definir las rutas y sus correspondientes métodos
 mapping = [
