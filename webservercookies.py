@@ -114,6 +114,12 @@ class WebRequestHandler(BaseHTTPRequestHandler):
             {searchpage.decode()}
             """ + lastadd
         self.wfile.write(response.encode("utf-8"))
+        if searchpage:
+                response = f"""
+                {searchpage.decode()}
+                """ + lastadd
+        else:
+                response = lastadd
 
 mapping = [
             (r'^/books/(?P<book_id>\d+)$', 'get_book'),
