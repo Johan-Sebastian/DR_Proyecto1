@@ -68,10 +68,6 @@ class WebRequestHandler(BaseHTTPRequestHandler):
             response = f"""
             {book_page.decode()}
         <p>  Ruta: {self.path}            </p>
-        <p>  URL: {self.url}              </p>
-        <p>  HEADERS: {self.headers}      </p>
-        <p>  SESSION: {session_id}      </p>
-        <p>  Recomendación: {book_recomendation}      </p>
 """
             self.wfile.write(response.encode("utf-8"))
         else:
