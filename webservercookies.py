@@ -99,14 +99,11 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         searchquery = self.url.query[5:]
         lastadd = ""
         for id in range(5):
-            id = id + 1
-            converted_num = str(id)
-            html = r.hgetall("libro:" + converted_num).decode()
+            html = r.get(id + 1).decode()
             text = BS(html, 'html.parser').get_text()
             if re.search(searchquery, text):
                 print("D")
                 lastadd = lastadd + f"""
-		
                       <h1><a href="\\books\\{id+1}"> Libro {id+1} contiene busqueda</a></h1><br>
                       """
         self.send_response(200)
