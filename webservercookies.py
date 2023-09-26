@@ -1,5 +1,4 @@
 from functools import cached_property
-from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qsl, urlparse
 from bs4 import BeautifulSoup as BS
@@ -14,25 +13,20 @@ class WebRequestHandler(BaseHTTPRequestHandler):
     def url(self):
         return urlparse(self.path)
 
-    @cached_property
-    def cookies(self):
-        return SimpleCookie(self.headers.get("Cookie"))
-
     def set_book_cookie(self, session_id, max_age=10):
-        c = SimpleCookie()
-        c["session"] = session_id
-        c["session"]["max-age"] = max_age
-        self.send_header('Set-Cookie', c.output(header=''))
+        # Aquí ya no necesitamos cookies
+        pass
 
     def get_book_session(self):
-        c = self.cookies
-        if not c:
-            print("No cookie")
-            c = SimpleCookie()
-            c["session"] = uuid.uuid4()
-        else:
-            print("Cookie found")
-        return c.get("session").value
+        # Obtener el identificador de sesión de la URL si está presente
+        query_params = dict(parse_qsl(self.url.query))
+        session_id = query_params.get('session_id')
+
+        if not session_id:
+            # Si no hay un identificador de sesión en la URL, generar uno nuevo
+            session_id = str(uuid.uuid4())
+
+        return session_id
 
     def do_GET(self):
         method = self.get_method(self.url.path)
@@ -63,12 +57,13 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         if book_page:
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
-            self.set_book_cookie(session_id)
             self.end_headers()
             response = f"""
             {book_page.decode()}
-        <p>  Ruta: {self.path}            </p>
-"""
+            <p>  Ruta: {self.path}            </p>
+            <p>  SESSION: {session_id}      </p>
+            <p>  Recomendación: {book_recomendation}      </p>
+            """
             self.wfile.write(response.encode("utf-8"))
         else:
             self.send_error(404, "Not Found")
@@ -77,7 +72,6 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         session_id = self.get_book_session()
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
-        self.set_book_cookie(session_id)
         self.end_headers()
         with open('html/index.html') as f:
             response = f.read()
@@ -91,38 +85,38 @@ class WebRequestHandler(BaseHTTPRequestHandler):
                 return (method, match.groupdict())
 
     def get_search(self):
-    	searchpage = r.get("search")
-    	searchquery = self.url.query[5:]
-    	lastadd = ""
-    	
-    	for id in range(5):
-    		html = r.get(id + 1).decode()
-    		text = BS(html, 'html.parser').get_text()
-    		if re.search(searchquery, text):
-    			lastadd = lastadd + f"""
-    				<div class="header">
-    					<h1><a href="\\books\\{id+1}"> Libro {id+1} contiene busqueda</a></h1>
-    				</div>
-    				<br>
-    			"""
-    
-    	if lastadd == "":
-    		lastadd = f"""<h4>No se ha encontrado tu búsqueda</h4>"""
-    
-    	self.send_response(200)
-    	self.send_header("Content-Type", "text/html")
-    	self.end_headers()
-    	response = f"""
-    		{searchpage.decode()}
-    		""" + lastadd
-    	self.wfile.write(response.encode("utf-8"))
+        searchpage = r.get("search")
+        searchquery = self.url.query[5:]
+        lastadd = ""
+
+        for id in range(5):
+            html = r.get(id + 1).decode()
+            text = BS(html, 'html.parser').get_text()
+            if re.search(searchquery, text):
+                lastadd = lastadd + f"""
+                    <div class="header">
+                        <h1><a href="\\books\\{id+1}?session_id={self.get_book_session()}"> Libro {id+1} contiene búsqueda</a></h1>
+                    </div>
+                    <br>
+                """
+
+        if lastadd == "":
+            lastadd = f"""<h4>No se ha encontrado tu búsqueda</h4>"""
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html")
+        self.end_headers()
+        response = f"""
+            {searchpage.decode()}
+            """ + lastadd
+        self.wfile.write(response.encode("utf-8"))
 
 
 mapping = [
-            (r'^/books/(?P<book_id>\d+)$', 'get_book'),
-            (r'^/$', 'get_index'),
-            (r'^/search', 'get_search')
-        ]
+    (r'^/books/(?P<book_id>\d+)$', 'get_book'),
+    (r'^/$', 'get_index'),
+    (r'^/search', 'get_search')
+]
 
 if __name__ == "__main__":
     print("Server starting...")
