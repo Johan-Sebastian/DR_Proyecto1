@@ -102,6 +102,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
     	for id in range(5):
     		html = r.get(id + 1).decode()
     		text = BS(html, 'html.parser').get_text()
+            self.wfile.write(response.encode("utf-8"))
     		if re.search(searchquery, text):
     			lastadd = lastadd + f"""
     				<div class="header">
