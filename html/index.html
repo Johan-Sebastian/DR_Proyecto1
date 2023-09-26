@@ -1,34 +1,107 @@
 <!DOCTYPE html>
 <html lang="es-mx">
-    <head>
-        <title>Proyecto 01</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="css/style.css" rel="stylesheet">
-        <form action="search" method="get">
-            <label for="book">Buscar en libros: </label>
-            <input type="text" name="book" value=""/>
-            <input type="submit" value="Buscar"/>
-        </form>
-    </head>
-    <body>
-    <h1>La Biblioteca</h1>       
-    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>La Biblioteca</title>
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        body {
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #q {
+            padding: 5px;
+            width: 300px;
+        }
+
+        article {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        article h2 {
+            margin: 0;
+            flex-basis: 100%;
+        }
+
+        article p {
+            margin: 0;
+            flex-basis: 100%;
+        }
+
+        .book {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .book img {
+            max-width: 150px;
+            max-height: 200px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>La Biblioteca</h1>
+
+    <form action="/search" method="get">
+        <label for="q">Buscar libros:</label>
+        <input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
+        <input type="submit" value="Buscar">
+    </form>
+
     <article>
-            <h2><a href="\books\1"> All Quiet on the Western Front </a></h2>
-            <p> Erich Maria Remarque </p>
-            <br> 
-            <h2><a href="\books\2"> Crime and Punishment</a></h2>
-            <p> Fyodor Dostoevsky </p>
-            <br> 
-            <h2><a href="\books\3"> The Catcher in the Rye </a></h2>
-            <p> Jerome David Salinger </p>
-            <br> 
-            <h2><a href="\books\4"> The Stranger </a></h2>
-            <p> Albert Camus </p>
-            <br> 
-            <h2><a href="\books\5"> The Metamorphosis </a></h2>
-            <p> Franz Kafka </p>
-     </article>
-    </body>
+        
+        <div class="book">
+            <img src="img/book1.png" alt="Rebelión en la Granja">
+            <div>
+                <h2><a href="books/book1.html">Rebelión en la Granja</a></h2>
+                <p>George Orwell</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book2.png" alt="Metro 2033 (NE)">
+            <div>
+                <h2><a href="books/book2.html">Metro 2033 (NE)</a></h2>
+                <p>Dmitry Glukhovsky</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book3.png" alt="El Manifiesto Comunista">
+            <div>
+                <h2><a href="books/book3.html">El Manifiesto Comunista</a></h2>
+                <p>Karl Marx, Friedrich Engels</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book4.png" alt="Fahrenheit 451">
+            <div>
+                <h2><a href="books/book4.html">Fahrenheit 451</a></h2>
+                <p>Ray Bradbury</p>
+            </div>
+        </div>
+        <div class="book">
+            <img src="img/book5.png" alt="Hitman: Damnation">
+            <div>
+                <h2><a href="books/book5.html">Hitman: Damnation</a></h2>
+                <p>Raymond Benson</p>
+            </div>
+        </div>
+    </article>
+</body>
 </html>
