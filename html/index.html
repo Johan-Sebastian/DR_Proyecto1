@@ -55,6 +55,10 @@
         .book p {
             margin: 0;
         }
+        .header {
+            background-color: #00CED1; /* Color cyan claro en formato hexadecimal */
+            padding: 10px; /* Agrega espacio alrededor del contenido */
+        }
     </style>
 </head>
 <body>
@@ -64,9 +68,18 @@
         <label for="q">Buscar libros:</label>
         <input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
         <input type="submit" value="Buscar">
-    </form>
+        </form>
+        <div class="header">
+        <h1>La Biblioteca</h1>
+            <form action="/search" method="get">
+            <label for="q">Buscar libros:</label>
+            <input type="text" id="q" name="q" placeholder="Ingrese hasta tres términos">
+            <input type="submit" value="Buscar">
+        </form>
+        </div>
 
-    <article>
+
+        <article>
         <div class="book">
             <img src="https://imgur.com/mcxpF6V.png" alt="Rebelión en la Granja">
             <div class="book-details">
